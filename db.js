@@ -4,6 +4,7 @@ const config = {
   logging: false
 };
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 if (process.env.LOGGING) {
   delete config.logging;
@@ -14,6 +15,13 @@ const User = conn.define('user', {
   username: STRING,
   password: STRING
 });
+
+const Note = conn.define('note', {
+  text: STRING,
+});
+
+Note.belongsTo(User);
+User.hasMany(Note);
 
 User.byToken = async (token) => {
   try {
@@ -39,17 +47,22 @@ User.byToken = async (token) => {
 User.authenticate = async ({ username, password }) => {
   const user = await User.findOne({
     where: {
-      username,
-      password
+      username
     }
   });
-  if (user) {
+  if (await bcrypt.compare(password, user.password)) {
     return jwt.sign({ userId: user.id }, 'itsasecret');
   }
   const error = Error('bad credentials');
   error.status = 401;
   throw error;
 };
+
+User.beforeCreate(async (user, options) => {
+  const hash = await bcrypt.hash(user.password, 5);
+  user.password = await hash;
+});
+
 
 const syncAndSeed = async () => {
   await conn.sync({ force: true });
@@ -61,18 +74,45 @@ const syncAndSeed = async () => {
   const [lucy, moe, larry] = await Promise.all(
     credentials.map(credential => User.create(credential))
   );
+  const content =[
+    {text: 'brush teeth'},
+    {text: 'take out trash'},
+    {text: 'do dishes'},
+    {text: 'clean shower'},
+    {text: 'mop'},
+    {text: 'vacuum'},
+    {text: 'buy groceries'},
+    {text: 'blood sacrifice'},
+    {text: 'call doctor'},
+  ];
+  const notes = await Promise.all(content.map(note => Note.create(note)));
+  const objNotes = {};
+  notes.map((note,idx) => {
+    objNotes[idx] = note;
+    if (idx % 2 === 0) {
+      lucy.setNotes(note);
+    }
+    else if (idx % 3 === 0) {
+      moe.setNotes(note);
+    }
+    else {
+      larry.setNotes(note);
+    }
+  });
   return {
     users: {
       lucy,
       moe,
       larry
-    }
+    },
+    notes: objNotes,
   };
 };
 
 module.exports = {
   syncAndSeed,
   models: {
-    User
+    User,
+    Note
   }
 };
