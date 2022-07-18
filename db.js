@@ -86,9 +86,7 @@ const syncAndSeed = async () => {
     {text: 'call doctor'},
   ];
   const notes = await Promise.all(content.map(note => Note.create(note)));
-  const objNotes = {};
   notes.map((note,idx) => {
-    objNotes[idx] = note;
     if (idx % 2 === 0) {
       lucy.setNotes(note);
     }
@@ -99,13 +97,14 @@ const syncAndSeed = async () => {
       larry.setNotes(note);
     }
   });
+  const ownedNotes = await Note.findAll({});
   return {
     users: {
       lucy,
       moe,
       larry
     },
-    notes: objNotes,
+    notes: ownedNotes,
   };
 };
 
