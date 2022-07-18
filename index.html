@@ -1,12 +1,14 @@
 <html>
-  <head>
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
-  </head>
-  <body>
-    <div id='root'></div>
+
+<head>
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <div id='root'></div>
   <script type='text/babel'>
     class SignIn extends React.Component{
       constructor(){
@@ -65,7 +67,11 @@
               authorization: token
             }
           });
-          const notes = await axios.get(`/api/users/${response.data.id}/notes`);
+          const notes = await axios.get(`/api/users/${response.data.id}/notes`, {
+            headers: {
+              authorization: token
+            }
+          });
           this.setState({ auth: response.data, notes: notes.data });
         }
       }
@@ -99,6 +105,6 @@
     }
     ReactDOM.render(<App />, document.querySelector('#root'));
   </script>
-  </body>
-</html>
+</body>
 
+</html>
